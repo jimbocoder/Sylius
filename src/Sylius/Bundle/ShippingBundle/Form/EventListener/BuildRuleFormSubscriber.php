@@ -17,82 +17,119 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
-
+use Sylius\Bundle\PromotionBundle\Form\EventListener\AbstractConfigurationSubscriber;
+use Sylius\Component\Shipping\Model\RuleInterface;
 /**
  * This listener adds configuration form to a rule,
  * if selected rule requires one.
  *
  * @author Saša Stamenković <umpirsky@gmail.com>
  */
-class BuildRuleFormSubscriber implements EventSubscriberInterface
+class BuildRuleFormSubscriber extends AbstractConfigurationSubscriber
+// class BuildRuleFormSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var RuleCheckerRegistryInterface
+     * Get Rule configuration
+     *
+     * @param RuleInterface $rule
+     *
+     * @return array
      */
-    private $checkerRegistry;
-
-    /**
-     * @var FormFactoryInterface
-     */
-    private $factory;
-
-    public function __construct(RuleCheckerRegistryInterface $checkerRegistry, FormFactoryInterface $factory)
+    protected function getConfiguration($rule)
     {
-        $this->checkerRegistry = $checkerRegistry;
-        $this->factory = $factory;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
-    {
-        return array(
-            FormEvents::PRE_SET_DATA => 'preSetData',
-            FormEvents::PRE_SUBMIT   => 'preSubmit',
-        );
-    }
-
-    /**
-     * @param FormEvent $event
-     */
-    public function preSetData(FormEvent $event)
-    {
-        $rule = $event->getData();
-        $form = $event->getForm();
-
-        if (null === $rule || null === $rule->getId()) {
-            return;
+        if ($rule instanceof RuleInterface && null !== $rule->getConfiguration()) {
+            return $rule->getConfiguration();
         }
 
-        $this->addConfigurationFields($form, $rule->getType(), $rule->getConfiguration());
+        return array();
     }
 
     /**
-     * @param FormEvent $event
+     * Get rule type
+     *
+     * @param RuleInterface $rule
+     *
+     * @return null|string
      */
-    public function preSubmit(FormEvent $event)
+    protected function getRegistryIdentifier($rule)
     {
-        $data = $event->getData();
-        $form = $event->getForm();
-
-        if (empty($data) || !array_key_exists('type', $data)) {
-            return;
+        if ($rule instanceof RuleInterface && null !== $rule->getType()) {
+            return $rule->getType();
         }
 
-        $this->addConfigurationFields($form, $data['type']);
-    }
+        if (null !== $this->registryIdentifier) {
+            return $this->registryIdentifier;
+        }
 
-    /**
-     * @param FormInterface $form
-     * @param $ruleType
-     * @param array         $data
-     */
-    protected function addConfigurationFields(FormInterface $form, $ruleType, array $data = array())
-    {
-        $checker = $this->checkerRegistry->getChecker($ruleType);
-        $configurationField = $this->factory->createNamed('configuration', $checker->getConfigurationFormType(), $data, array('auto_initialize' => false));
-
-        $form->add($configurationField);
+        return null;
     }
+    // /**
+    //  * @var RuleCheckerRegistryInterface
+    //  */
+    // private $checkerRegistry;
+    //
+    // /**
+    //  * @var FormFactoryInterface
+    //  */
+    // private $factory;
+    //
+    // public function __construct(RuleCheckerRegistryInterface $checkerRegistry, FormFactoryInterface $factory)
+    // {
+    //     $this->checkerRegistry = $checkerRegistry;
+    //     $this->factory = $factory;
+    // }
+    //
+    // /**
+    //  * {@inheritdoc}
+    //  */
+    // public static function getSubscribedEvents()
+    // {
+    //     return array(
+    //         FormEvents::PRE_SET_DATA => 'preSetData',
+    //         FormEvents::PRE_SUBMIT   => 'preSubmit',
+    //     );
+    // }
+    //
+    // /**
+    //  * @param FormEvent $event
+    //  */
+    // public function preSetData(FormEvent $event)
+    // {
+    //     $rule = $event->getData();
+    //     $form = $event->getForm();
+    //
+    //     if (null === $rule || null === $rule->getId()) {
+    //         return;
+    //     }
+    //
+    //     $this->addConfigurationFields($form, $rule->getType(), $rule->getConfiguration());
+    // }
+    //
+    // /**
+    //  * @param FormEvent $event
+    //  */
+    // public function preSubmit(FormEvent $event)
+    // {
+    //     $data = $event->getData();
+    //     $form = $event->getForm();
+    //
+    //     if (empty($data) || !array_key_exists('type', $data)) {
+    //         return;
+    //     }
+    //
+    //     $this->addConfigurationFields($form, $data['type']);
+    // }
+    //
+    // /**
+    //  * @param FormInterface $form
+    //  * @param $ruleType
+    //  * @param array         $data
+    //  */
+    // protected function addConfigurationFields(FormInterface $form, $ruleType, array $data = array())
+    // {
+    //     $checker = $this->checkerRegistry->getChecker($ruleType);
+    //     $configurationField = $this->factory->createNamed('configuration', $checker->getConfigurationFormType(), $data, array('auto_initialize' => false));
+    //
+    //     $form->add($configurationField);
+    // }
 }

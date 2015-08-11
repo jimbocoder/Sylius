@@ -11,7 +11,7 @@
         </div>
         <div class="col-md-6">
             {{ form_row(form.calculator) }}
-            {% for name, calculatorConfigurationPrototype in form.vars.prototypes %}
+            {% for name, calculatorConfigurationPrototype in form.vars.prototypez %}
                 <div id="{{ form.calculator.vars.id }}_{{ name }}" data-container=".configuration" data-prototype="{{ form_widget(calculatorConfigurationPrototype)|e }}">
                 </div>
             {% endfor %}
@@ -23,6 +23,11 @@
                 {% endfor %}
             {% endif %}
             </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 row-split">
+            {{ form_row(form.rules) }}
         </div>
     </div>
 </fieldset>

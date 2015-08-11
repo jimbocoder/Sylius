@@ -15,33 +15,43 @@ use Sylius\Bundle\ResourceBundle\Form\Type\AbstractResourceType;
 use Sylius\Bundle\ShippingBundle\Form\EventListener\BuildRuleFormSubscriber;
 use Sylius\Component\Shipping\Checker\Registry\RuleCheckerRegistryInterface;
 use Symfony\Component\Form\FormBuilderInterface;
+use Sylius\Bundle\PromotionBundle\Form\Type\Core\AbstractConfigurationType;
+use Sylius\Component\Shipping\Model\RuleInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
  * Shipping rule form type.
  *
  * @author Saša Stamenković <umpirsky@gmail.com>
  */
-class RuleType extends AbstractResourceType
+class RuleType extends AbstractConfigurationType
+// class RuleType extends AbstractResourceType
 {
-    protected $checkerRegistry;
+    // protected $checkerRegistry;
 
-    public function __construct($dataClass, array $validationGroups, RuleCheckerRegistryInterface $checkerRegistry)
-    {
-        parent::__construct($dataClass, $validationGroups);
-
-        $this->checkerRegistry = $checkerRegistry;
-    }
+    // public function __construct($dataClass, array $validationGroups, RuleCheckerRegistryInterface $checkerRegistry)
+    // {
+    //     parent::__construct($dataClass, $validationGroups);
+    //
+    //     $this->checkerRegistry = $checkerRegistry;
+    // }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options = array())
     {
+        // dump($options);exit;
         $builder
-            ->addEventSubscriber(new BuildRuleFormSubscriber($this->checkerRegistry, $builder->getFormFactory()))
             ->add('type', 'sylius_shipping_rule_choice', array(
                 'label' => 'sylius.form.rule.type',
+                'attr' => array(
+                    'data-form-collection' => 'update',
+                ),
             ))
+            ->addEventSubscriber(
+                new BuildRuleFormSubscriber($this->registry, $builder->getFormFactory(), $options['configuration_type'])
+            )
         ;
     }
 
@@ -52,4 +62,17 @@ class RuleType extends AbstractResourceType
     {
         return 'sylius_shipping_rule';
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    {
+        parent::setDefaultOptions($resolver);
+
+        $resolver->setDefaults(array(
+            'configuration_type' => RuleInterface::TYPE_ITEM_COUNT,
+        ));
+    }
+
 }

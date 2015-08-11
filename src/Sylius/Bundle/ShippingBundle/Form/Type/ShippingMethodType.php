@@ -86,13 +86,23 @@ class ShippingMethodType extends AbstractResourceType
             ->add('calculator', 'sylius_shipping_calculator_choice', array(
                 'label'    => 'sylius.form.shipping_method.calculator',
             ))
+            // ->add('rules', 'sylius_shipping_rule_choice', array(
+            //     'label'    => 'sylius.form.shipping_method.rules',
+            // ))
+            ->add('rules', 'sylius_shipping_rule_collection', array(
+                'label' => 'sylius.form.shipping.rules',
+                'button_add_label' => 'sylius.shipping.add_rule',
+            ))
         ;
 
         $prototypes = array();
         $prototypes['rules'] = array();
+        // dump($this->checkerRegistry->getCheckers());exit;
         foreach ($this->checkerRegistry->getCheckers() as $type => $checker) {
+            // $prototypes['rules'][$type] = $builder->create('configuration', $checker->getConfigurationFormType())->getForm();
             $prototypes['rules'][$type] = $builder->create('__name__', $checker->getConfigurationFormType())->getForm();
         }
+        // dump($this->calculatorRegistry->getCalculators());exit;
         $prototypes['calculators'] = array();
         foreach ($this->calculatorRegistry->getCalculators() as $name => $calculator) {
             if (!$calculator->isConfigurable()) {
@@ -109,10 +119,10 @@ class ShippingMethodType extends AbstractResourceType
      */
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
-        $view->vars['prototypes'] = array();
+        $view->vars['prototypez'] = array();
         foreach ($form->getConfig()->getAttribute('prototypes') as $group => $prototypes) {
             foreach ($prototypes as $type => $prototype) {
-                $view->vars['prototypes'][$group.'_'.$type] = $prototype->createView($view);
+                $view->vars['prototypez'][$group.'_'.$type] = $prototype->createView($view);
             }
         }
     }
